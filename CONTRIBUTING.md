@@ -142,6 +142,40 @@ def test_create_user_with_duplicate_email_returns_409():
 def test_get_user_when_not_authenticated_returns_401():
 ```
 
+### Concurrency Tests
+
+When writing tests that spawn threads (e.g., stress tests, race condition tests):
+
+1. **Threads cannot share database sessions** - SQLAlchemy sessions are not thread-safe
+2. **Threads cannot see test fixture data** - Test fixtures use transactions that are isolated from other sessions
+3. **Don't import `SessionLocal` directly in threads** - It may connect to the wrong database
+
+**Solution**: Pass a session factory configured for the test database to threads:
+
+```python
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
+
+TEST_DATABASE_URL = "postgresql://admin:secret@localhost:5432/test_db"
+
+@pytest.fixture
+def test_session_factory():
+    """Session factory for threads to use."""
+    engine = create_engine(TEST_DATABASE_URL)
+    return sessionmaker(bind=engine)
+
+def test_concurrent_operations(test_session_factory):
+    def worker():
+        session = test_session_factory()
+        try:
+            # Use session...
+        finally:
+            session.close()
+
+    with ThreadPoolExecutor(max_workers=5) as executor:
+        futures = [executor.submit(worker) for _ in range(10)]
+```
+
 ---
 
 ## Git Workflow
