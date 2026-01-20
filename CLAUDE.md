@@ -2,9 +2,14 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-**IMPORTANT**: Read and follow [CONTRIBUTING.md](CONTRIBUTING.md) for development standards, code style, testing requirements, and Makefile usage.
+## Development Standards
 
-<!-- SIZE CHECK: Keep this file under 2.5k tokens (~1,900 words). Current: ~950 words. Alert user if exceeded. -->
+- Use `make` for repeatable workflows, raw commands for debugging/exploration
+- Run `make lint` and `make test` before committing
+- 70% backend test coverage minimum (enforced by CI)
+- See [CONTRIBUTING.md](CONTRIBUTING.md) for full style guide and details
+
+<!-- SIZE CHECK: Keep this file under 2.5k tokens (~1,900 words). Alert user if exceeded. -->
 
 ## Project Overview
 
