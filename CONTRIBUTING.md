@@ -1,0 +1,316 @@
+# Contributing & Development Standards
+
+This document defines development standards, workflows, and tooling conventions.
+
+## Development Philosophy
+
+1. **Makefile for orchestration, raw commands for debugging**
+2. **CI must pass before merge** - No exceptions
+3. **Tests are not optional** - 70% coverage minimum
+4. **Security is everyone's job** - Run security-reviewer agent before major PRs
+
+---
+
+## When to Use Makefile vs Raw Commands
+
+### Use Makefile When:
+
+| Scenario | Command | Why |
+|----------|---------|-----|
+| Starting development | `make dev` | Starts all services correctly |
+| Running all tests | `make test` | Consistent with CI |
+| Running E2E tests | `make test-e2e` | Handles server lifecycle |
+| Before committing | `make lint` | Catches issues early |
+| Deploying infrastructure | `make cdk-deploy-preprod` | Correct profile/context |
+
+### Use Raw Commands When:
+
+| Scenario | Command | Why |
+|----------|---------|-----|
+| Debugging a single test | `pytest tests/test_foo.py::test_bar -v` | More control |
+| Watching frontend tests | `npm run test:watch` | Interactive mode |
+| Running specific migration | `alembic upgrade +1` | Granular control |
+| Checking a specific endpoint | `curl localhost:8000/api/health` | Quick inspection |
+| Installing a new package | `pip install foo` | Then add to requirements.txt |
+
+### Rule of Thumb
+
+> **Use `make` for repeatable workflows. Use raw commands for exploration.**
+
+---
+
+## Code Standards
+
+### Python (Backend)
+
+**Style:**
+- Formatter: `black` (line length 88)
+- Import sorter: `isort` (black-compatible)
+- Type hints: Required for public functions
+- Docstrings: Required for modules, classes, public functions
+
+**Run locally:**
+```bash
+make format-backend   # Auto-format
+make lint-backend     # Check without fixing
+```
+
+**Example:**
+```python
+def get_user_by_id(db: Session, user_id: UUID) -> User | None:
+    """Fetch a user by their ID.
+
+    Args:
+        db: Database session
+        user_id: The user's UUID
+
+    Returns:
+        User if found, None otherwise
+    """
+    return db.query(User).filter(User.id == user_id).first()
+```
+
+### TypeScript (Frontend)
+
+**Style:**
+- Formatter: Prettier (via ESLint)
+- Linter: ESLint with TypeScript rules
+- Strict mode: Enabled
+
+**Run locally:**
+```bash
+make lint-frontend    # Check
+npm run lint -- --fix # Auto-fix
+```
+
+**Conventions:**
+- React components: PascalCase files (`UserProfile.tsx`)
+- Utilities: camelCase files (`formatDate.ts`)
+- Types: Suffix with type (`UserResponse`, `CreateUserRequest`)
+- Hooks: Prefix with `use` (`useAuth`, `useApi`)
+
+### SQL/Migrations
+
+- Use Alembic for all schema changes
+- Never modify production data in migrations
+- Include both `upgrade()` and `downgrade()`
+- Test migrations: `alembic upgrade head && alembic downgrade -1 && alembic upgrade head`
+
+---
+
+## Testing Requirements
+
+### Coverage Thresholds
+
+| Component | Minimum | Target |
+|-----------|---------|--------|
+| Backend | 70% | 85% |
+| Frontend | 20% | 60% |
+
+### Test Categories
+
+**Unit Tests** (fast, isolated):
+```bash
+make test-backend     # Backend unit tests
+make test-frontend    # Frontend unit tests
+```
+
+**E2E Tests** (slow, integrated):
+```bash
+make test-e2e         # Full browser tests with server lifecycle
+```
+
+### What to Test
+
+**Always test:**
+- API endpoints (happy path + error cases)
+- Authentication/authorization logic
+- Business logic in services
+- Database queries with edge cases
+
+**Don't test:**
+- Third-party libraries
+- Simple getters/setters
+- Framework internals
+
+### Test Naming
+
+```python
+# Pattern: test_<action>_<condition>_<expected_result>
+def test_create_user_with_valid_data_returns_201():
+def test_create_user_with_duplicate_email_returns_409():
+def test_get_user_when_not_authenticated_returns_401():
+```
+
+---
+
+## Git Workflow
+
+### Branch Naming
+
+```
+feature/add-user-profile
+fix/auth-token-refresh
+chore/update-dependencies
+```
+
+### Commit Messages
+
+```
+<type>: <short description>
+
+<optional body>
+
+Co-Authored-By: Claude <noreply@anthropic.com>  # If AI-assisted
+```
+
+Types: `feat`, `fix`, `docs`, `chore`, `refactor`, `test`
+
+### PR Requirements
+
+Before opening a PR:
+1. [ ] `make test` passes locally
+2. [ ] `make lint` passes
+3. [ ] New code has tests
+4. [ ] CLAUDE.md updated if adding new patterns
+
+Before merging:
+1. [ ] CI passes
+2. [ ] At least one approval (or self-merge if solo)
+3. [ ] No unresolved comments
+
+---
+
+## Security Standards
+
+### Before Major Changes
+
+Run the security-reviewer agent:
+```
+Claude: "Run security review on the auth changes"
+```
+
+### Secrets Management
+
+- **Never** commit secrets to git
+- Use `.env` for local development (gitignored)
+- Use AWS Secrets Manager for deployed environments
+- Rotate credentials if accidentally exposed
+
+### Authentication
+
+- All API endpoints require authentication except `/api/health`
+- Use `Depends(get_current_user)` for protected routes
+- Validate token type (`access` not `id`)
+- Check resource ownership before returning data
+
+---
+
+## Makefile Reference
+
+```bash
+make help             # Show all available commands
+
+# Full Stack
+make install          # Install all dependencies
+make dev              # Start all services (docker-compose up)
+make stop             # Stop all services
+make clean            # Remove containers, volumes, caches
+make test             # Run all tests
+make lint             # Run all linters
+
+# Backend
+make install-backend  # pip install -r requirements.txt
+make test-backend     # pytest tests/ -v
+make lint-backend     # black --check && isort --check && mypy
+make format-backend   # black && isort (auto-fix)
+make migrate          # alembic upgrade head
+make migration        # Create new migration (prompts for message)
+
+# Frontend
+make install-frontend # npm install
+make test-frontend    # npm run test
+make lint-frontend    # npm run lint
+
+# E2E
+make test-e2e         # Full E2E with server lifecycle
+make test-browser-install  # Install Playwright browsers
+
+# Infrastructure
+make cdk-diff-preprod    # Preview CDK changes
+make cdk-deploy-preprod  # Deploy to preprod
+make cdk-diff-prod       # Preview prod changes
+make cdk-deploy-prod     # Deploy to production
+```
+
+---
+
+## CI/CD Pipeline
+
+### What Runs When
+
+| Event | Workflow | Jobs |
+|-------|----------|------|
+| PR to main | `ci.yml` | backend tests, frontend tests, playwright |
+| Push to main | `deploy.yml` | tests (via ci.yml) → deploy preprod |
+| Manual trigger | `deploy.yml` | tests → deploy preprod OR prod |
+
+### If CI Fails
+
+1. Check the failed job in GitHub Actions
+2. Run the same command locally:
+   - Backend: `make test-backend-ci`
+   - Frontend: `make test-frontend-ci`
+   - E2E: `make test-e2e`
+3. Fix and push
+
+### Deployment Verification
+
+After deploy, the pipeline verifies the correct version is running by checking `/api/health` for the expected `git_sha`.
+
+---
+
+## Adding New Features
+
+### Checklist
+
+1. **Plan**: Update CLAUDE.md if adding new patterns
+2. **Implement**: Follow code standards above
+3. **Test**: Add tests, ensure coverage
+4. **Document**: Update README if user-facing
+5. **Review**: Run `make lint`, `make test`
+6. **Security**: Run security-reviewer for auth/data changes
+7. **Deploy**: PR → merge → auto-deploy to preprod
+
+### Adding a New API Endpoint
+
+```bash
+# 1. Create the route
+# backend/app/api/widgets.py
+
+# 2. Create schemas
+# backend/app/schemas/widget.py
+
+# 3. Add to main.py
+# app.include_router(widgets.router, ...)
+
+# 4. Write tests
+# backend/tests/test_api/test_widgets.py
+
+# 5. Run tests
+make test-backend
+```
+
+### Adding a New Frontend Page
+
+```bash
+# 1. Create the page
+# frontend/src/pages/WidgetsPage.tsx
+
+# 2. Add route in App.tsx
+
+# 3. Write tests (optional for pages, required for components)
+
+# 4. Run tests
+make test-frontend
+```

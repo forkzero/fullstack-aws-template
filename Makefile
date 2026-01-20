@@ -6,7 +6,8 @@
 DOCKER_COMPOSE := docker-compose
 
 help:
-	@echo "Available commands:"
+	@echo "Available commands (see CONTRIBUTING.md for when to use make vs raw commands):"
+	@echo ""
 	@echo "  make install        - Install all dependencies"
 	@echo "  make dev            - Start development environment"
 	@echo "  make test           - Run all tests"
@@ -15,14 +16,20 @@ help:
 	@echo "  make build          - Build for production"
 	@echo "  make clean          - Clean up containers and volumes"
 	@echo ""
-	@echo "Backend commands:"
-	@echo "  make install-backend"
-	@echo "  make test-backend"
-	@echo "  make migrate"
+	@echo "Backend:"
+	@echo "  make install-backend / test-backend / lint-backend / format-backend"
+	@echo "  make migrate        - Run migrations"
+	@echo "  make migration      - Create new migration"
 	@echo ""
-	@echo "Frontend commands:"
-	@echo "  make install-frontend"
-	@echo "  make test-frontend"
+	@echo "Frontend:"
+	@echo "  make install-frontend / test-frontend / lint-frontend"
+	@echo ""
+	@echo "E2E:"
+	@echo "  make test-e2e       - Full browser tests with server lifecycle"
+	@echo ""
+	@echo "Infrastructure:"
+	@echo "  make cdk-diff-preprod / cdk-deploy-preprod"
+	@echo "  make cdk-diff-prod / cdk-deploy-prod"
 
 # ============================================================================
 # Full Stack

@@ -155,6 +155,7 @@ Add these secrets to your GitHub repository:
 
 ## Documentation
 
+- [CONTRIBUTING.md](CONTRIBUTING.md) - **Development standards, Makefile usage, code style**
 - [CLAUDE.md](CLAUDE.md) - AI assistant instructions
 - [Control Tower Setup](infrastructure/docs/CONTROL_TOWER_SETUP.md) - AWS account setup
 - [Auth Hardening Plan](docs/AUTH_HARDENING_PLAN.md) - Security roadmap
