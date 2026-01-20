@@ -1,0 +1,41 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(docker-compose:*)",
+      "Bash(docker:*)",
+      "Bash(make:*)",
+      "Bash(npm:*)",
+      "Bash(pip:*)",
+      "Bash(pytest:*)",
+      "Bash(git:*)",
+      "Bash(gh:*)",
+      "Bash(aws:*)",
+      "Bash(cdk:*)",
+      "Bash(npx:*)",
+      "Bash(uvicorn:*)",
+      "Bash(alembic:*)",
+      "Bash(curl:*)",
+      "Bash(ls:*)",
+      "Bash(mkdir:*)",
+      "Bash(rm:*)",
+      "Bash(cat:*)",
+      "Bash(grep:*)",
+      "Bash(find:*)",
+      "Bash(echo:*)",
+      "Bash(cd:*)",
+      "Bash(pwd:*)",
+      "Bash(cp:*)",
+      "Bash(mv:*)",
+      "Bash(touch:*)",
+      "Bash(head:*)",
+      "Bash(tail:*)",
+      "Bash(wc:*)",
+      "Bash(sort:*)",
+      "Bash(sleep:*)",
+      "Bash(pkill:*)",
+      "Bash(kill:*)",
+      "Bash(nohup:*)"
+    ],
+    "deny": []
+  }
+}

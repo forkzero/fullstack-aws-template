@@ -1,0 +1,42 @@
+{
+  "app": "npx ts-node --prefer-ts-exts bin/app.ts",
+  "watch": {
+    "include": ["**"],
+    "exclude": [
+      "README.md",
+      "cdk*.json",
+      "**/*.d.ts",
+      "**/*.js",
+      "tsconfig.json",
+      "package*.json",
+      "node_modules",
+      "test"
+    ]
+  },
+  "context": {
+    "@aws-cdk/aws-lambda:recognizeLayerVersion": true,
+    "@aws-cdk/core:checkSecretUsage": true,
+    "@aws-cdk/core:target-partitions": ["aws", "aws-cn"],
+    "domain": "yourdomain.com",
+    "hostedZoneId": "ZXXXXXXXXXX",
+    "appSubdomain": "app",
+    "environments": {
+      "preprod": {
+        "account": "111111111111",
+        "region": "us-east-1",
+        "subdomainPrefix": "preprod",
+        "dbInstanceClass": "t4g.micro",
+        "appRunnerMinSize": 1,
+        "appRunnerMaxSize": 2
+      },
+      "prod": {
+        "account": "222222222222",
+        "region": "us-east-1",
+        "subdomainPrefix": "",
+        "dbInstanceClass": "t4g.small",
+        "appRunnerMinSize": 1,
+        "appRunnerMaxSize": 5
+      }
+    }
+  }
+}
