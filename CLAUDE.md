@@ -4,6 +4,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 **IMPORTANT**: Read and follow [CONTRIBUTING.md](CONTRIBUTING.md) for development standards, code style, testing requirements, and Makefile usage.
 
+<!-- SIZE CHECK: Keep this file under 2.5k tokens (~1,900 words). Current: ~950 words. Alert user if exceeded. -->
+
 ## Project Overview
 
 **{{PROJECT_NAME}}** is a full-stack web application built with FastAPI (backend), React (frontend), and AWS CDK (infrastructure).
