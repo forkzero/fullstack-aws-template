@@ -2,6 +2,8 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+**IMPORTANT**: Read and follow [CONTRIBUTING.md](CONTRIBUTING.md) for development standards, code style, testing requirements, and Makefile usage.
+
 ## Project Overview
 
 **{{PROJECT_NAME}}** is a full-stack web application built with FastAPI (backend), React (frontend), and AWS CDK (infrastructure).
