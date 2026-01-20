@@ -107,18 +107,17 @@ npm run lint -- --fix # Auto-fix
 | Backend | 70% | 85% |
 | Frontend | 20% | 60% |
 
-### Test Categories
+### Test Types
 
-**Unit Tests** (fast, isolated):
-```bash
-make test-backend     # Backend unit tests
-make test-frontend    # Frontend unit tests
-```
-
-**E2E Tests** (slow, integrated):
-```bash
-make test-e2e         # Full browser tests with server lifecycle
-```
+| Type | Purpose | When to Write | Command |
+|------|---------|---------------|---------|
+| **Unit** | Test functions in isolation | Core business logic, utilities | `make test-backend` |
+| **Integration** | Test components together (API + DB) | API endpoints, service layers | `make test-backend` |
+| **E2E** | Browser tests simulating users | Critical user flows | `make test-e2e` |
+| **Concurrency** | Race conditions, thread safety | Shared resources, parallel ops | `pytest tests/test_concurrency.py` |
+| **Antagonistic** | Behavior when dependencies fail | External APIs, DB, network | See guidance below |
+| **Fuzz/Property** | Random inputs to find edge cases | Input parsing, validation | Use `hypothesis` library |
+| **Load/Performance** | Response times under stress | Before production release | Use `locust` or `k6` |
 
 ### What to Test
 
@@ -132,6 +131,46 @@ make test-e2e         # Full browser tests with server lifecycle
 - Third-party libraries
 - Simple getters/setters
 - Framework internals
+
+### Antagonistic Tests (Failure Handling)
+
+Test how your system behaves when dependencies fail. Choose the right failure strategy:
+
+**Fail-Closed** (stop and return error) - Use for security-critical operations:
+```python
+def test_auth_service_down_rejects_requests():
+    """When auth fails, reject all requests (fail-closed)."""
+    with mock.patch('app.core.auth.verify_token', side_effect=ConnectionError):
+        response = client.get("/api/protected")
+        assert response.status_code == 503  # Service unavailable, not 200
+```
+
+**Fail-Open** (continue with degraded functionality) - Use for non-critical features:
+```python
+def test_analytics_down_continues_request():
+    """When analytics fails, request still succeeds (fail-open)."""
+    with mock.patch('app.services.analytics.track', side_effect=ConnectionError):
+        response = client.post("/api/action")
+        assert response.status_code == 200  # Action succeeds despite analytics failure
+```
+
+**When to use each:**
+
+| Scenario | Strategy | Rationale |
+|----------|----------|-----------|
+| Auth/permission check fails | **Fail-closed** | Never grant access on failure |
+| Payment processor fails | **Fail-closed** | Don't complete transaction |
+| Rate limiter fails | **Fail-closed** | Prevent abuse |
+| Analytics/tracking fails | **Fail-open** | Non-critical, don't block user |
+| Recommendation engine fails | **Fail-open** | Show defaults instead |
+| Cache fails | **Fail-open** | Fall back to database |
+| Core feature dependency fails | **Fail-closed** | Can't provide degraded version |
+
+**Hybrid: Circuit Breaker Pattern**
+```python
+# After N failures, stop trying and return cached/default response
+# Periodically retry to see if service recovered
+```
 
 ### Test Naming
 
